@@ -1,11 +1,12 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime
+from zoneinfo import ZoneInfo
 import requests
 import pandas as pd
 
 
 BASE_URL = os.getenv("TOTTO_BASE_URL", "https://co.totto.com")
-CATEGORY_ENDPOINT = f"{BASE_URL}/api/catalog_system/pub/products/search/morrales"
+SEARCH_ENDPOINT = f"{BASE_URL}/api/catalog_system/pub/products/search"
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
@@ -15,35 +16,50 @@ HEADERS = {
 }
 
 
-def obtener_productos_ejecutivos(limite=49):
-    """Consulta la API pública de VTEX en Totto Colombia por categoría morrales."""
-    params = {
-        "_from": 0,
-        "_to": min(limite, 49),
-    }
-    respuesta = requests.get(
-        CATEGORY_ENDPOINT, params=params, headers=HEADERS, timeout=20
-    )
-    # VTEX devuelve 200 (completo) o 206 (parcial paginado); ambos son válidos
-    if respuesta.status_code not in (200, 206):
-        respuesta.raise_for_status()
-    return respuesta.json()
+def obtener_productos_ejecutivos(limite=1000):
+    """Recorre paginadamente el catálogo público de Totto Colombia en lotes de 50."""
+    todos_productos = []
+    paso = 50
+
+    for inicio in range(0, limite, paso):
+        fin = min(inicio + paso - 1, limite - 1)
+        params = {"_from": inicio, "_to": fin}
+        respuesta = requests.get(
+            SEARCH_ENDPOINT, params=params, headers=HEADERS, timeout=20
+        )
+        # VTEX devuelve 200 (completo) o 206 (parcial paginado); ambos son válidos
+        if respuesta.status_code not in (200, 206):
+            respuesta.raise_for_status()
+
+        lote = respuesta.json()
+        if not lote:
+            break
+
+        todos_productos.extend(lote)
+        if len(lote) < paso:
+            break
+
+    return todos_productos
 
 
 def procesar_catalogo(productos_raw, solo_ejecutivos=True):
     """Transforma la respuesta JSON cruda en un DataFrame estructurado."""
     registros = []
-    fecha_extraccion = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")
+    zona_colombia = ZoneInfo("America/Bogota")
+    fecha_extraccion = datetime.now(zona_colombia).strftime("%Y-%m-%d %H:%M:%S COT")
 
     for prod in productos_raw:
         product_id = prod.get("productId")
         nombre = prod.get("productName", "").strip()
+        descripcion = prod.get("description", "").lower()
         marca = prod.get("brand", "TOTTO")
         categorias = prod.get("categories", [])
         ruta_categorias = " ".join(categorias).lower()
 
         if solo_ejecutivos and (
-            "ejecutivo" not in nombre.lower() and "ejecutivo" not in ruta_categorias
+            "ejecutivo" not in nombre.lower()
+            and "ejecutivo" not in ruta_categorias
+            and "ejecutivo" not in descripcion
         ):
             continue
 
@@ -92,10 +108,9 @@ def procesar_catalogo(productos_raw, solo_ejecutivos=True):
 def ejecutar_pipeline_extraccion(ruta_salida="data/totto_ejecutivos.csv"):
     """Ejecuta extracción completa y guarda el archivo CSV."""
     os.makedirs(os.path.dirname(ruta_salida), exist_ok=True)
-    datos_crudos = obtener_productos_ejecutivos(limite=49)
+    datos_crudos = obtener_productos_ejecutivos(limite=1000)
     df_limpio = procesar_catalogo(datos_crudos, solo_ejecutivos=True)
 
-    # Si en la primera página no hay suficientes marcados como 'ejecutivo', toma toda la muestra
     if df_limpio.empty:
         df_limpio = procesar_catalogo(datos_crudos, solo_ejecutivos=False)
 

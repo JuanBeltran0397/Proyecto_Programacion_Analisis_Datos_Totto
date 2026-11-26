@@ -6,8 +6,8 @@ on:
   pull_request:
     branches: [ "main" ]
   schedule:
-    # Ejecución programada todos los lunes a las 08:00 UTC
-    - cron: '0 8 * * 1'
+    # Ejecución programada todos los días a las 9:00 p.m. hora Colombia (02:00 UTC)
+    - cron: '0 2 * * *'
   workflow_dispatch:
 
 jobs:
