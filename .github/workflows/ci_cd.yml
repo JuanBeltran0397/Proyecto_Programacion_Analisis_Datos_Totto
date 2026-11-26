@@ -29,14 +29,17 @@ jobs:
           pip install -r requirements.txt
 
       - name: 4. Análisis estático de código (Flake8)
-        run: flake8 scraper.py test_scraper.py --count --max-line-length=100 --statistics
+        run: >
+          flake8 scraper.py test_scraper.py generar_reporte.py
+          --count --max-line-length=100 --statistics
 
       - name: 5. Ejecutar pruebas automatizadas (Pytest)
         run: pytest test_scraper.py -v
 
-  cd-extraccion-actualizacion:
-    name: CD - Actualización Automática de Dataset
+  cd-extraccion-y-despliegue:
+    name: CD - Actualización Dataset y Reporte HTML
     needs: ci-calidad-y-pruebas
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -59,9 +62,12 @@ jobs:
           TOTTO_BASE_URL: "https://co.totto.com"
         run: python scraper.py
 
-      - name: 5. Guardar y publicar CSV actualizado en el repositorio
+      - name: 5. Generar reporte visual HTML (docs/index.html)
+        run: python generar_reporte.py
+
+      - name: 6. Publicar CSV y HTML actualizados en el repositorio
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add data/totto_ejecutivos.csv
-          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(data): actualización automática catálogo Totto [skip ci]" && git push)
+          git add data/totto_ejecutivos.csv docs/index.html
+          git diff --quiet && git diff --staged --quiet || (git commit -m "chore(cd): actualizar dataset y reporte HTML [skip ci]" && git push)
