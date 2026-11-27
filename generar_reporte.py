@@ -1,4 +1,5 @@
 import json
+from html import escape
 import os
 import pandas as pd
 
@@ -13,7 +14,7 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
         raise FileNotFoundError(f"No se encontró el archivo de datos: {ruta_csv}")
 
     df = pd.read_csv(ruta_csv)
-    os.makedirs(os.path.dirname(ruta_salida), exist_ok=True)
+    os.makedirs(os.path.dirname(ruta_salida) or ".", exist_ok=True)
 
     total_productos = len(df)
     precio_promedio = f"${df['precio_cop'].mean():,.0f}" if total_productos > 0 else "$0"
@@ -23,6 +24,28 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
         df["fecha_extraccion"].iloc[0]
         if total_productos > 0 and "fecha_extraccion" in df.columns
         else "Sin fecha"
+    )
+
+    # Indicadores complementarios EA3
+    df["ahorro_cop"] = df["precio_lista_cop"] - df["precio_cop"]
+    indicadores = {
+        "Precio mínimo": df["precio_cop"].min() if total_productos else 0,
+        "Precio máximo": df["precio_cop"].max() if total_productos else 0,
+        "Ahorro promedio": df["ahorro_cop"].mean() if total_productos else 0,
+        "Ahorro total potencial": df["ahorro_cop"].sum(),
+    }
+    tarjetas = "".join(
+        f'<div class="card"><h3>{nombre} (COP)</h3>'
+        f'<div class="valor">${valor:,.0f}</div></div>'
+        for nombre, valor in indicadores.items()
+    )
+    resumen = df.groupby("categoria")["precio_cop"].agg(["size", "mean"])
+    categorias = json.dumps(resumen.index.tolist(), ensure_ascii=False)
+    cantidades = json.dumps(resumen["size"].tolist())
+    promedios = json.dumps(resumen["mean"].round(2).tolist())
+    opciones = "".join(
+        f'<option value="{escape(str(c))}">{escape(str(c))}</option>'
+        for c in resumen.index
     )
 
     # Preparar datos para gráficos (Top 10 precios y Top 10 descuentos)
@@ -51,12 +74,13 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
         )
         filas_html.append(
             f"""
-            <tr>
-                <td>{row['nombre']}</td>
-                <td>{row['categoria']}</td>
+            <tr data-precio="{row['precio_cop']}">
+                <td>{escape(str(row['nombre']))}</td>
+                <td>{escape(str(row['categoria']))}</td>
                 <td>${row['precio_cop']:,.0f}</td>
                 <td>${row['precio_lista_cop']:,.0f}</td>
                 <td>{row['descuento_pct']:.1f}%</td>
+                <td>${row['ahorro_cop']:,.0f}</td>
                 <td>{estado_badge}</td>
                 <td>{enlace}</td>
             </tr>
@@ -114,6 +138,15 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
         .badge.ok {{ background: #e8f5e9; color: #2e7d32; }}
         .badge.no {{ background: #ffebee; color: #c62828; }}
         a {{ color: #d32f2f; text-decoration: none; font-weight: 600; }}
+        .filtros {{ display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }}
+        .filtros label {{ display: grid; gap: 5px; }}
+        .filtros input, .filtros select, .filtros button {{
+            padding: 8px; border: 1px solid #ccc; border-radius: 6px;
+        }}
+        .filtros button {{
+            background: #d32f2f; color: white; cursor: pointer;
+        }}
+        @media (max-width: 600px) {{ .charts {{ grid-template-columns: 1fr; }} }}
     </style>
 </head>
 <body>
@@ -142,6 +175,8 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
         </div>
     </section>
 
+    <section class="kpis">{tarjetas}</section>
+
     <section class="charts">
         <div class="card">
             <h3>Top 10 Productos con Mayor Precio (COP)</h3>
@@ -153,10 +188,26 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
         </div>
     </section>
 
+    <section class="charts">
+        <div class="card"><h3>Distribución por categoría</h3>
+            <canvas id="chartCategorias"></canvas></div>
+        <div class="card"><h3>Precio promedio por categoría (COP)</h3>
+            <canvas id="chartPromedios"></canvas></div>
+    </section>
     <section class="table-box">
         <h3>Catálogo Detallado Extraído</h3>
-        <input type="text" id="buscador" onkeyup="filtrarTabla()"
+        <input type="text" id="buscador" oninput="filtrarTabla()"
                placeholder="Filtrar producto por nombre...">
+        <div class="filtros">
+            <label>Categoría <select id="categoria" onchange="filtrarTabla()">
+                <option value="">Todas</option>{opciones}</select></label>
+            <label>Precio mínimo <input id="minimo" type="number" min="0"
+                oninput="filtrarTabla()"></label>
+            <label>Precio máximo <input id="maximo" type="number" min="0"
+                oninput="filtrarTabla()"></label>
+            <button type="button" onclick="limpiarFiltros()">Limpiar filtros</button>
+        </div>
+        <p id="contador" aria-live="polite">Productos encontrados: {total_productos}</p>
         <table id="tablaProductos">
             <thead>
                 <tr>
@@ -165,6 +216,7 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
                     <th>Precio Actual</th>
                     <th>Precio Lista</th>
                     <th>Descuento</th>
+                    <th>Ahorro (COP)</th>
                     <th>Estado</th>
                     <th>Enlace</th>
                 </tr>
@@ -177,6 +229,7 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
 </div>
 
 <script>
+    if (typeof Chart !== "undefined") {{
     new Chart(document.getElementById('chartPrecios'), {{
         type: 'bar',
         data: {{
@@ -203,13 +256,41 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
         options: {{ indexAxis: 'y', plugins: {{ legend: {{ display: false }} }} }}
     }});
 
+    new Chart(document.getElementById('chartCategorias'), {{
+        type: 'doughnut',
+        data: {{ labels: {categorias}, datasets: [{{ data: {cantidades} }}] }}
+    }});
+    new Chart(document.getElementById('chartPromedios'), {{
+        type: 'bar',
+        data: {{ labels: {categorias}, datasets: [{{
+            label: 'Precio promedio COP', data: {promedios}, backgroundColor: '#d32f2f'
+        }}] }},
+        options: {{ scales: {{ y: {{ beginAtZero: true }} }} }}
+    }});
+    }}
     function filtrarTabla() {{
         const filtro = document.getElementById('buscador').value.toLowerCase();
-        const filas = document.querySelectorAll('#tablaProductos tbody tr');
-        filas.forEach(fila => {{
-            const texto = fila.cells[0].textContent.toLowerCase();
-            fila.style.display = texto.includes(filtro) ? '' : 'none';
+        const categoria = document.getElementById('categoria').value;
+        const min = document.getElementById('minimo').value;
+        const max = document.getElementById('maximo').value;
+        let encontrados = 0;
+        document.querySelectorAll('#tablaProductos tbody tr').forEach(fila => {{
+            const precio = Number(fila.dataset.precio);
+            const visible = fila.cells[0].textContent.toLowerCase().includes(filtro)
+                && (!categoria || fila.cells[1].textContent === categoria)
+                && (min === '' || precio >= Number(min))
+                && (max === '' || precio <= Number(max));
+            fila.style.display = visible ? '' : 'none';
+            if (visible) encontrados++;
         }});
+        document.getElementById('contador').textContent =
+            'Productos encontrados: ' + encontrados;
+    }}
+    function limpiarFiltros() {{
+        ['buscador', 'categoria', 'minimo', 'maximo'].forEach(id => {{
+            document.getElementById(id).value = '';
+        }});
+        filtrarTabla();
     }}
 </script>
 </body>

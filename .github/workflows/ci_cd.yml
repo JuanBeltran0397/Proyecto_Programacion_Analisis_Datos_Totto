@@ -2,7 +2,7 @@ name: Pipeline CI/CD - Web Scraping Totto
 
 on:
   push:
-    branches: [ "main", "rama_automatizacion" ]
+    branches: [ "main", "rama_automatizacion", "mejoras-ea3" ]
   pull_request:
     branches: [ "main" ]
   schedule:
@@ -30,16 +30,16 @@ jobs:
 
       - name: 4. Análisis estático de código (Flake8)
         run: >
-          flake8 scraper.py test_scraper.py generar_reporte.py
+          flake8 scraper.py test_scraper.py generar_reporte.py test_reporte.py
           --count --max-line-length=100 --statistics
 
       - name: 5. Ejecutar pruebas automatizadas (Pytest)
-        run: pytest test_scraper.py -v
+        run: pytest test_scraper.py test_reporte.py -v
 
   cd-extraccion-y-despliegue:
     name: CD - Actualización Dataset y Reporte HTML
     needs: ci-calidad-y-pruebas
-    if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: write
