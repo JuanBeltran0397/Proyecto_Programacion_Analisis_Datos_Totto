@@ -62,29 +62,29 @@
 <div class="container">
     <header>
         <h1>🎒 Monitor Automatizado — Morrales Totto Colombia</h1>
-        <p>Pipeline CI/CD (GitHub Actions) | Última actualización: <strong>2026-11-27 04:29:53 UTC</strong></p>
+        <p>Pipeline CI/CD (GitHub Actions) | Última actualización: <strong>28/11/2026 - 11:29 AM (Hora Colombia)</strong></p>
     </header>
 
     <section class="kpis">
         <div class="card">
             <h3>Productos Analizados</h3>
-            <div class="valor">6</div>
+            <div class="valor">7</div>
         </div>
         <div class="card">
             <h3>Precio Promedio (COP)</h3>
-            <div class="valor">$145,159</div>
+            <div class="valor">$146,135</div>
         </div>
         <div class="card">
             <h3>Descuento Promedio</h3>
-            <div class="valor">26.7%</div>
+            <div class="valor">25.7%</div>
         </div>
         <div class="card">
             <h3>Disponibles en Stock</h3>
-            <div class="valor">6</div>
+            <div class="valor">7</div>
         </div>
     </section>
 
-    <section class="kpis"><div class="card"><h3>Precio mínimo (COP)</h3><div class="valor">$104,993</div></div><div class="card"><h3>Precio máximo (COP)</h3><div class="valor">$195,993</div></div><div class="card"><h3>Ahorro promedio (COP)</h3><div class="valor">$53,164</div></div><div class="card"><h3>Ahorro total potencial (COP)</h3><div class="valor">$318,984</div></div></section>
+    <section class="kpis"><div class="card"><h3>Precio mínimo (COP)</h3><div class="valor">$104,993</div></div><div class="card"><h3>Precio máximo (COP)</h3><div class="valor">$199,992</div></div><div class="card"><h3>Ahorro promedio (COP)</h3><div class="valor">$50,997</div></div><div class="card"><h3>Ahorro total potencial (COP)</h3><div class="valor">$356,982</div></div></section>
 
     <section class="charts">
         <div class="card">
@@ -116,7 +116,7 @@
                 oninput="filtrarTabla()"></label>
             <button type="button" onclick="limpiarFiltros()">Limpiar filtros</button>
         </div>
-        <p id="contador" aria-live="polite">Productos encontrados: 6</p>
+        <p id="contador" aria-live="polite">Productos encontrados: 7</p>
         <table id="tablaProductos">
             <thead>
                 <tr>
@@ -156,6 +156,30 @@
             </tr>
             
 
+            <tr data-precio="135992.0">
+                <td>Morral Ejecutivo Porta PC 14&quot; Salem Negro Hombre</td>
+                <td>Hombre/Morrales</td>
+                <td>$135,992</td>
+                <td>$169,990</td>
+                <td>20.0%</td>
+                <td>$33,998</td>
+                <td><span class="badge ok">Disponible</span></td>
+                <td><a href="https://co.totto.com/morral-ejecutivo-porta-pc-14-salem-negro-hombre-ma04sal002-26200-n01/p" target="_blank" rel="noopener">Ver en Totto</a></td>
+            </tr>
+            
+
+            <tr data-precio="199992.0">
+                <td>Morral Táctico Porta PC 16&quot; Polixan 3.0 Negro Hombre</td>
+                <td>Hombre/Morrales</td>
+                <td>$199,992</td>
+                <td>$249,990</td>
+                <td>20.0%</td>
+                <td>$49,998</td>
+                <td><span class="badge ok">Disponible</span></td>
+                <td><a href="https://co.totto.com/morral-ejecutivo-porta-pc-16-polixan-30-negro-hombre-ma04net008-26100-n01/p" target="_blank" rel="noopener">Ver en Totto</a></td>
+            </tr>
+            
+
             <tr data-precio="195993.0">
                 <td>Morral Ejecutivo Porta PC 14&quot; Adelaide 1 2.0 Morado Mujer</td>
                 <td>Mujer/Morrales</td>
@@ -191,18 +215,6 @@
                 <td><a href="https://co.totto.com/morral-wivetto-totto-ma04ind832-2120g-n01/p" target="_blank" rel="noopener">Ver en Totto</a></td>
             </tr>
             
-
-            <tr data-precio="183992.0">
-                <td>Morral Ejecutivo Porta PC 16&quot; Dallas Café Hombre</td>
-                <td>Hombre/Morrales</td>
-                <td>$183,992</td>
-                <td>$229,990</td>
-                <td>20.0%</td>
-                <td>$45,998</td>
-                <td><span class="badge ok">Disponible</span></td>
-                <td><a href="https://co.totto.com/morral-ejecutivo-porta-pc-16-dallas-cafe-hombre-ma04ind928-26260-t5a/p" target="_blank" rel="noopener">Ver en Totto</a></td>
-            </tr>
-            
             </tbody>
         </table>
     </section>
@@ -213,10 +225,10 @@
     new Chart(document.getElementById('chartPrecios'), {
         type: 'bar',
         data: {
-            labels: ["Morral Ejecutivo Porta PC 14\" Adelaide 1 2.0 Morado Mujer", "Morral Ejecutivo Porta PC 16\" Dallas Café Hombre", "Morral Ejecutivo Porta PC 16\" Dallas Negro Hombre", "Morral Ejecutivo Porta PC 14\" Wivetto Negro Hombre", "Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Negro Hombre", "Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Azul Hombre"],
+            labels: ["Morral Táctico Porta PC 16\" Polixan 3.0 Negro Hombre", "Morral Ejecutivo Porta PC 14\" Adelaide 1 2.0 Morado Mujer", "Morral Ejecutivo Porta PC 16\" Dallas Negro Hombre", "Morral Ejecutivo Porta PC 14\" Salem Negro Hombre", "Morral Ejecutivo Porta PC 14\" Wivetto Negro Hombre", "Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Negro Hombre", "Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Azul Hombre"],
             datasets: [{
                 label: 'Precio COP',
-                data: [195993.0, 183992.0, 160993.0, 119992.0, 104993.0, 104993.0],
+                data: [199992.0, 195993.0, 160993.0, 135992.0, 119992.0, 104993.0, 104993.0],
                 backgroundColor: '#d32f2f'
             }]
         },
@@ -226,10 +238,10 @@
     new Chart(document.getElementById('chartDescuentos'), {
         type: 'bar',
         data: {
-            labels: ["Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Azul Hombre", "Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Negro Hombre", "Morral Ejecutivo Porta PC 14\" Adelaide 1 2.0 Morado Mujer", "Morral Ejecutivo Porta PC 16\" Dallas Negro Hombre", "Morral Ejecutivo Porta PC 14\" Wivetto Negro Hombre", "Morral Ejecutivo Porta PC 16\" Dallas Café Hombre"],
+            labels: ["Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Azul Hombre", "Morral Ejecutivo Porta PC 16\" Wivetto 2.0 Negro Hombre", "Morral Ejecutivo Porta PC 14\" Adelaide 1 2.0 Morado Mujer", "Morral Ejecutivo Porta PC 16\" Dallas Negro Hombre", "Morral Ejecutivo Porta PC 14\" Salem Negro Hombre", "Morral Táctico Porta PC 16\" Polixan 3.0 Negro Hombre", "Morral Ejecutivo Porta PC 14\" Wivetto Negro Hombre"],
             datasets: [{
                 label: 'Descuento %',
-                data: [30.0, 30.0, 30.0, 30.0, 20.0, 20.0],
+                data: [30.0, 30.0, 30.0, 30.0, 20.0, 20.0, 20.0],
                 backgroundColor: '#2e7d32'
             }]
         },
@@ -238,12 +250,12 @@
 
     new Chart(document.getElementById('chartCategorias'), {
         type: 'doughnut',
-        data: { labels: ["Hombre/Morrales", "Mujer/Morrales"], datasets: [{ data: [5, 1] }] }
+        data: { labels: ["Hombre/Morrales", "Mujer/Morrales"], datasets: [{ data: [6, 1] }] }
     });
     new Chart(document.getElementById('chartPromedios'), {
         type: 'bar',
         data: { labels: ["Hombre/Morrales", "Mujer/Morrales"], datasets: [{
-            label: 'Precio promedio COP', data: [134992.6, 195993.0], backgroundColor: '#d32f2f'
+            label: 'Precio promedio COP', data: [137825.83, 195993.0], backgroundColor: '#d32f2f'
         }] },
         options: { scales: { y: { beginAtZero: true } } }
     });
