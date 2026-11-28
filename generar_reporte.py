@@ -1,4 +1,5 @@
 import json
+from datetime import datetime, timezone, timedelta
 from html import escape
 import os
 import pandas as pd
@@ -20,11 +21,19 @@ def generar_html(ruta_csv=DATA_PATH, ruta_salida=OUTPUT_HTML):
     precio_promedio = f"${df['precio_cop'].mean():,.0f}" if total_productos > 0 else "$0"
     descuento_promedio = f"{df['descuento_pct'].mean():.1f}%" if total_productos > 0 else "0%"
     disponibles = int(df["disponible"].sum()) if total_productos > 0 else 0
-    fecha_act = (
-        df["fecha_extraccion"].iloc[0]
-        if total_productos > 0 and "fecha_extraccion" in df.columns
-        else "Sin fecha"
-    )
+
+    if total_productos > 0 and "fecha_extraccion" in df.columns:
+        fecha_raw = str(df["fecha_extraccion"].iloc[0]).strip()
+        try:
+            dt_utc = datetime.strptime(
+                fecha_raw.replace(" UTC", ""), "%Y-%m-%d %H:%M:%S"
+            ).replace(tzinfo=timezone.utc)
+            dt_col = dt_utc.astimezone(timezone(timedelta(hours=-5)))
+            fecha_act = dt_col.strftime("%d/%m/%Y - %I:%M %p (Hora Colombia)")
+        except ValueError:
+            fecha_act = fecha_raw
+    else:
+        fecha_act = "Sin fecha"
 
     # Indicadores complementarios EA3
     df["ahorro_cop"] = df["precio_lista_cop"] - df["precio_cop"]
