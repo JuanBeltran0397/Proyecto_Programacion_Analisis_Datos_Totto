@@ -1,74 +1,49 @@
 # Proyecto_Programacion_Analisis_Datos_Totto
 
+Sistema automatizado de extracción (*web scraping*), procesamiento, análisis y visualización de datos del catálogo de morrales de **Totto Colombia**, con integración y despliegue continuo mediante **GitHub Actions** y **GitHub Pages**.
 
-## Mejoras implementadas - EA3
+🌐 **Dashboard en vivo:** [Ver reporte interactivo en GitHub Pages](https://juanbeltran0397.github.io/Proyecto_Programacion_Analisis_Datos_Totto/)
 
-### Objetivo
+---
 
-Complementar el sistema automatizado de extracción,
-procesamiento, análisis y visualización de datos del
-catálogo de morrales ejecutivos de Totto Colombia.
+## Objetivo del Proyecto
 
-### Mejoras funcionales
+Automatizar la recolección periódica de precios, descuentos y disponibilidad del catálogo de morrales ejecutivos de Totto Colombia para generar un tablero interactivo de indicadores clave (KPIs) y análisis comparativo, garantizando calidad de código y despliegue continuo sin intervención manual.
 
-- Ampliación de 4 a 8 indicadores.
-- Ampliación de 2 a 4 gráficas.
-- Análisis del ahorro económico por producto.
-- Distribución de productos por categoría.
-- Comparación de precios promedio por categoría.
-- Filtros por nombre, categoría y rango de precios.
-- Contador de productos encontrados.
-- Opción para limpiar los filtros.
+---
 
-### Mejoras de calidad
+## Mejoras Implementadas — Entrega EA3
 
-- Ampliación de 3 a 12 pruebas automatizadas.
-- Validación de precios y descuentos.
-- Validación de indicadores y generación del HTML.
-- Análisis estático mediante Flake8.
+### Mejoras funcionales en el Dashboard (`generar_reporte.py`)
+- **Ampliación de 4 a 8 indicadores KPI:** incorporación de precio mínimo, precio máximo, ahorro promedio por producto y ahorro total potencial en pesos colombianos (COP).
+- **Ampliación de 2 a 4 gráficas interactivas (Chart.js):** Top 10 productos con mayor precio, Top 10 mayores descuentos (%), distribución de productos por categoría y precio promedio por categoría.
+- **Análisis económico:** cálculo automático del ahorro por producto (`precio_lista_cop - precio_cop`).
+- **Filtros dinámicos en el catálogo:** búsqueda en tiempo real por nombre, filtro por categoría, rango de precios (mínimo y máximo), contador dinámico de resultados y botón para limpiar filtros.
+- **Localización horaria:** conversión automática de la marca de tiempo de extracción desde `UTC` a **hora local de Colombia (`COT`, UTC-5)** en formato legible.
 
-### Pipeline CI/CD
+### Mejoras de calidad y pruebas (`test_reporte.py`)
+- **Ampliación de 3 a 12 pruebas unitarias automatizadas** con `pytest`.
+- Validación de cálculos de precios, porcentajes de descuento, ahorro económico y disponibilidad.
+- Validación de integridad de indicadores y generación correcta del archivo HTML.
+- Análisis estático de estilo y sintaxis bajo estándares PEP 8 mediante **Flake8**.
 
-- Integración continua en la rama mejoras-ea3.
-- Ejecución automatizada de pruebas con Pytest.
-- Validación de calidad mediante Flake8.
-- Extracción automatizada de datos.
-- Generación del reporte HTML.
-- Restricción del despliegue a la rama main.
+### Pipeline CI/CD (`.github/workflows/ci_cd.yml`)
+- Validación automatizada en ramas de desarrollo (`mejoras-ea3`) y producción (`main`).
+- Ejecución automática de pruebas unitarias (`pytest`) y auditoría de código (`flake8`).
+- Extracción automatizada del catálogo (`scraper.py`) y regeneración del reporte (`generar_reporte.py`).
+- Despliegue continuo automático publicado desde la carpeta `/docs` en la rama `main` hacia **GitHub Pages**.
 
-### Tecnologías utilizadas
+---
 
-- Python
-- Pandas
-- Requests
-- Pytest
-- Flake8
-- HTML, CSS y JavaScript
-- Chart.js
-- GitHub Actions
-- GitHub Pages
-- Google Colab
+## Estructura del Repositorio
 
-### Instalación de dependencias
-
-    pip install -r requirements.txt
-
-### Ejecución del proyecto
-
-    python scraper.py
-    python generar_reporte.py
-
-### Ejecución de pruebas
-
-    python -m pytest test_scraper.py test_reporte.py -v
-
-### Resultados de validación local
-
-- 12 pruebas automatizadas aprobadas.
-- 8 indicadores en el dashboard.
-- 4 gráficas de análisis.
-
-### Control de versiones
-
-Las mejoras se desarrollaron en la rama mejoras-ea3,
-conservando el trabajo original del proyecto.
+```text
+├── .github/workflows/   # Configuración del pipeline CI/CD en GitHub Actions
+├── data/                # Dataset extraído en formato CSV (totto_ejecutivos.csv)
+├── docs/                # Reporte HTML generado y publicado en GitHub Pages (index.html)
+├── scraper.py           # Módulo de extracción de datos desde Totto Colombia
+├── generar_reporte.py   # Generador del dashboard HTML interactivo con Chart.js
+├── test_scraper.py      # Pruebas unitarias del módulo de extracción
+├── test_reporte.py      # Pruebas unitarias del generador de reportes y métricas
+├── requirements.txt     # Dependencias del proyecto
+└── README.md            # Documentación técnica del proyecto
